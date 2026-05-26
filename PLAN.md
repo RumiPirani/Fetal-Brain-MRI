@@ -40,3 +40,11 @@
   derived summary parameters are implemented.
 - Run tests, linter, and typechecker; fix any failures before committing.
 
+## 2026-05-25 Increment 6: Parameter Evaluation API
+
+- Add tests for a calculator-facing parameter evaluation function.
+- Combine source lookup, consensus reconciliation, and standard band classification.
+- Return a stable result object containing parameter id, measurement, consensus, and band.
+- Fail clearly for unknown parameters via the registry lookup.
+- Run tests, linter, and typechecker; fix any failures before committing.
+

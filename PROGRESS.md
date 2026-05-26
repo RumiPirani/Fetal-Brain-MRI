@@ -15,10 +15,12 @@ Project implementation has started from the specification-only repository.
   in-range/extrapolated tagging, and `single`/`agree`/`disagree` states.
 - Added the first SPEC 4.2.2 source-registry entries for TCD: Luis 2025 and Dovjak 2021.
 - Added TEST 1.3 standard band classification for `<5th`, `normal`, and `>95th`.
+- Added a calculator-facing single-parameter evaluation API that combines registry lookup,
+  consensus reconciliation, and band classification.
 
 ## In Progress
 
-- Increment 6: parameter result wrapper combining registry, consensus, and bands.
+- Increment 7: deterministic report line generation for one parameter.
 
 ## Open Spec Issues
 
