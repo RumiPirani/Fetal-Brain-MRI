@@ -14,10 +14,11 @@ Project implementation has started from the specification-only repository.
 - Implemented the first SPEC 4.2.3 consensus reconciliation core with source detail,
   in-range/extrapolated tagging, and `single`/`agree`/`disagree` states.
 - Added the first SPEC 4.2.2 source-registry entries for TCD: Luis 2025 and Dovjak 2021.
+- Added TEST 1.3 standard band classification for `<5th`, `normal`, and `>95th`.
 
 ## In Progress
 
-- Increment 5: parameter bands from TEST 1.3 and SPEC 4.2 output semantics.
+- Increment 6: parameter result wrapper combining registry, consensus, and bands.
 
 ## Open Spec Issues
 

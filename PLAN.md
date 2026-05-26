@@ -32,3 +32,11 @@
 - Record the SPEC 4.2.4 arithmetic discrepancy in `PROGRESS.md`.
 - Run tests, linter, and typechecker; fix any failures before committing.
 
+## 2026-05-25 Increment 5: Band Classification
+
+- Add tests for TEST 1.3 band labels from consensus z-scores.
+- Implement `<5th`, `normal`, and `>95th` labels using standard z cutoffs.
+- Keep size-summary `<3rd` and `>97th` special cases out of scope until those
+  derived summary parameters are implemented.
+- Run tests, linter, and typechecker; fix any failures before committing.
+
