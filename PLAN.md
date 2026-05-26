@@ -55,3 +55,11 @@
 - Keep full multi-section report generation out of scope until multi-parameter cases exist.
 - Run tests, linter, and typechecker; fix any failures before committing.
 
+## 2026-05-25 Increment 8: Structured Report Skeleton
+
+- Add tests for a deterministic report with Methodology, Findings, and Impression sections.
+- Include the SPEC 4.8 multi-source consensus methodology statement.
+- Append `SOURCE-AGREEMENT NOTES` when any result is in `disagree`.
+- Keep DDx-card impression synthesis out of scope until the DDx engine exists.
+- Run tests, linter, and typechecker; fix any failures before committing.
+

@@ -18,10 +18,12 @@ Project implementation has started from the specification-only repository.
 - Added a calculator-facing single-parameter evaluation API that combines registry lookup,
   consensus reconciliation, and band classification.
 - Added deterministic one-parameter report text with consensus and per-source z-score disclosure.
+- Added a deterministic structured report skeleton with methodology, findings, impression,
+  and source-agreement notes for disagreeing measurements.
 
 ## In Progress
 
-- Increment 8: full multi-parameter structured report skeleton.
+- Increment 9: broaden source registry beyond TCD.
 
 ## Open Spec Issues
 
