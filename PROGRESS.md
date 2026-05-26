@@ -13,10 +13,19 @@ Project implementation has started from the specification-only repository.
 - Implemented the three SPEC 4.2.1 normative model families and standard-normal percentile conversion.
 - Implemented the first SPEC 4.2.3 consensus reconciliation core with source detail,
   in-range/extrapolated tagging, and `single`/`agree`/`disagree` states.
+- Added the first SPEC 4.2.2 source-registry entries for TCD: Luis 2025 and Dovjak 2021.
 
 ## In Progress
 
-- Increment 4: first real source-registry entries from SPEC 4.2.2 and 4.2.4.
+- Increment 5: parameter bands from TEST 1.3 and SPEC 4.2 output semantics.
+
+## Open Spec Issues
+
+- SPEC 4.2.4's TCD worked example prose appears arithmetically inconsistent with its
+  printed Luis coefficients. The encoded coefficients yield Luis mean 31.8764 mm,
+  z = 0.817; paired with the Dovjak z = -0.165, the disagreement width is about
+  0.982, which is `agree` under the SPEC 4.2.3 threshold. The prose says width
+  1.003 and `disagree`. Current implementation follows the printed coefficients.
 
 ## Remaining
 

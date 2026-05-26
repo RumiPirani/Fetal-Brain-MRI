@@ -24,3 +24,11 @@
 - Keep report and UI surfacing out of scope for this increment.
 - Run tests, linter, and typechecker; fix any failures before committing.
 
+## 2026-05-25 Increment 4: First Source Registry Entries
+
+- Add tests for retrieving the SPEC 4.2.2/4.2.4 TCD registry entries.
+- Encode Luis 2025 and Dovjak 2021 TCD model coefficients from SPEC 4.2.4.
+- Verify per-source means, sigmas, z-scores, and consensus output.
+- Record the SPEC 4.2.4 arithmetic discrepancy in `PROGRESS.md`.
+- Run tests, linter, and typechecker; fix any failures before committing.
+
