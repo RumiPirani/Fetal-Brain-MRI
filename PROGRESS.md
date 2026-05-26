@@ -17,10 +17,11 @@ Project implementation has started from the specification-only repository.
 - Added TEST 1.3 standard band classification for `<5th`, `normal`, and `>95th`.
 - Added a calculator-facing single-parameter evaluation API that combines registry lookup,
   consensus reconciliation, and band classification.
+- Added deterministic one-parameter report text with consensus and per-source z-score disclosure.
 
 ## In Progress
 
-- Increment 7: deterministic report line generation for one parameter.
+- Increment 8: full multi-parameter structured report skeleton.
 
 ## Open Spec Issues
 

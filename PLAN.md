@@ -48,3 +48,10 @@
 - Fail clearly for unknown parameters via the registry lookup.
 - Run tests, linter, and typechecker; fix any failures before committing.
 
+## 2026-05-25 Increment 7: One-Parameter Report Text
+
+- Add tests for deterministic report text for one evaluated parameter.
+- Include measurement, consensus z-score, percentile, band, agreement state, and per-source labels.
+- Keep full multi-section report generation out of scope until multi-parameter cases exist.
+- Run tests, linter, and typechecker; fix any failures before committing.
+
