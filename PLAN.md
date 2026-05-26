@@ -16,3 +16,11 @@
 - Validate that model sigma values are positive and fail clearly when not.
 - Run tests, linter, and typechecker; fix any failures before committing.
 
+## 2026-05-25 Increment 3: Consensus Reconciliation Core
+
+- Add tests for SPEC 4.2.3 source evaluation and agreement states.
+- Cover `single`, `agree`, `disagree`, and all-extrapolated fallback behavior.
+- Implement source metadata, per-source results, and consensus result objects.
+- Keep report and UI surfacing out of scope for this increment.
+- Run tests, linter, and typechecker; fix any failures before committing.
+
