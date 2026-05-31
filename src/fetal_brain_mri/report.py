@@ -2,17 +2,53 @@
 
 from __future__ import annotations
 
-from fetal_brain_mri.calculator import ParameterResult
+from fetal_brain_mri.calculator import CaseResult, ParameterResult
 
-_PARAMETER_LABELS = {
+_PARAMETER_LABELS: dict[str, str] = {
+    "skull_bpd": "Skull BPD",
+    "skull_ofd": "Skull OFD",
+    "brain_bpd": "Brain BPD",
+    "brain_ofd_l": "Brain OFD (left)",
+    "brain_ofd_r": "Brain OFD (right)",
+    "atrium_l": "Atrial diameter (left)",
+    "atrium_r": "Atrial diameter (right)",
+    "csp": "CSP width",
+    "cc_length": "Corpus callosum length",
     "tcd": "TCD",
+    "vermis_cc": "Vermis height (CC)",
+    "vermis_ap": "Vermis AP diameter",
+    "pons_ap": "Pons AP diameter",
+    "third_ventricle": "Third ventricle width",
+    "tdpf": "TDPF (posterior fossa)",
+    "csa": "Clivus-supraocciput angle",
 }
+
+def _ordinal(n: int) -> str:
+    if 11 <= (n % 100) <= 13:
+        return f"{n}th"
+    suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
+
+
+_UNIT: dict[str, str] = {
+    "csa": "°",
+    "tdpf": "mm",
+}
+
+
+def _label(param_id: str) -> str:
+    return _PARAMETER_LABELS.get(param_id, param_id)
+
+
+def _unit(param_id: str) -> str:
+    return _UNIT.get(param_id, "mm")
 
 
 def render_parameter_line(result: ParameterResult) -> str:
     """Render one measured parameter with consensus and source disclosure."""
 
-    label = _PARAMETER_LABELS.get(result.parameter_id, result.parameter_id)
+    label = _label(result.parameter_id)
+    unit = _unit(result.parameter_id)
     consensus = result.consensus
     source_text = "; ".join(
         f"{source.label} z={source.z_score:+.2f}"
@@ -21,18 +57,40 @@ def render_parameter_line(result: ParameterResult) -> str:
     )
     percentile = round(consensus.percentile)
     return (
-        f"{label}: {result.measurement:.1f} mm "
-        f"(Z: {consensus.consensus_z:+.2f}, {percentile}rd percentile, "
+        f"{label}: {result.measurement:.1f} {unit} "
+        f"(Z: {consensus.consensus_z:+.2f}, {_ordinal(percentile)} percentile, "
         f"band: {result.band}, agreement: {consensus.agreement}; sources: {source_text})"
     )
 
 
-def render_structured_report(results: list[ParameterResult]) -> str:
-    """Render the deterministic report sections currently supported."""
+def render_absent_line(param_id: str) -> str:
+    """Render a qualitative-absent parameter line."""
 
-    findings = "\n".join(render_parameter_line(result) for result in results)
-    impression = _render_impression(results)
-    sections = [
+    return f"{_label(param_id)}: absent (qualitative — z-score not computed)"
+
+
+def render_structured_report(
+    results: list[ParameterResult],
+    case: CaseResult | None = None,
+) -> str:
+    """Render the full deterministic structured report.
+
+    Accepts either a flat list of ParameterResults (legacy) or a full
+    CaseResult that also supplies DDx cards and absent parameters.
+    """
+
+    findings_lines: list[str] = []
+    for r in results:
+        findings_lines.append(render_parameter_line(r))
+
+    if case is not None:
+        for param_id in case.qualitative_absent:
+            findings_lines.append(render_absent_line(param_id))
+
+    findings = "\n".join(findings_lines)
+    impression = _render_impression(results, case)
+
+    sections: list[str] = [
         "METHODOLOGY",
         (
             "Calculator operated in multi-source consensus mode; consensus z-scores are "
@@ -42,21 +100,47 @@ def render_structured_report(results: list[ParameterResult]) -> str:
         "FINDINGS",
         findings,
     ]
+
     notes = _render_source_agreement_notes(results)
     if notes:
         sections.extend(["", "SOURCE-AGREEMENT NOTES", notes])
+
+    if case is not None and case.ddx_cards:
+        sections.extend(["", "DIFFERENTIAL DIAGNOSES", _render_ddx_section(case)])
+
     sections.extend(["", "IMPRESSION", impression])
     return "\n".join(sections)
 
 
-def _render_impression(results: list[ParameterResult]) -> str:
-    if all(result.band == "normal" for result in results):
-        return "No abnormal biometric findings."
+def _render_impression(
+    results: list[ParameterResult],
+    case: CaseResult | None,
+) -> str:
+    absent_labels = []
+    if case is not None:
+        absent_labels = [_label(p) for p in case.qualitative_absent]
+
     abnormal = [
-        f"{_PARAMETER_LABELS.get(result.parameter_id, result.parameter_id)} {result.band}"
-        for result in results
-        if result.band != "normal"
+        f"{_label(r.parameter_id)} {r.band}"
+        for r in results
+        if r.band not in ("normal",)
     ]
+    abnormal += [f"{lbl} (absent)" for lbl in absent_labels]
+
+    # Combined-pattern cards produce a more specific impression
+    if case is not None and case.ddx_cards:
+        combined = [c for c in case.ddx_cards if c.is_combined_pattern]
+        if combined:
+            combined_labels = "; ".join(c.label for c in combined)
+            if abnormal:
+                return (
+                    f"Abnormal biometric findings consistent with: {combined_labels}. "
+                    f"Abnormal parameters: {'; '.join(abnormal)}."
+                )
+            return f"Biometric pattern consistent with: {combined_labels}."
+
+    if not abnormal:
+        return "No abnormal biometric findings."
     return "Abnormal biometric findings: " + "; ".join(abnormal) + "."
 
 
@@ -66,7 +150,7 @@ def _render_source_agreement_notes(results: list[ParameterResult]) -> str:
         consensus = result.consensus
         if consensus.agreement != "disagree":
             continue
-        label = _PARAMETER_LABELS.get(result.parameter_id, result.parameter_id)
+        label = _label(result.parameter_id)
         sources = "; ".join(
             f"{source.label} z={source.z_score:+.2f}" for source in consensus.sources
         )
@@ -74,3 +158,25 @@ def _render_source_agreement_notes(results: list[ParameterResult]) -> str:
             f"{label} disagreement width {consensus.disagreement_width:.2f}: {sources}."
         )
     return "\n".join(lines)
+
+
+def _render_ddx_section(case: CaseResult) -> str:
+    """Render all fired DDx cards."""
+
+    blocks: list[str] = []
+    for card in case.ddx_cards:
+        marker = "[COMBINED PATTERN] " if card.is_combined_pattern else ""
+        header = f"{marker}{card.label}"
+        trigger_line = f"  Trigger: {card.trigger_description}"
+        dx_lines = "\n".join(
+            f"  • {dx.name}: {dx.likelihood} — {dx.rationale}"
+            for dx in card.diagnoses
+        )
+        next_line = f"  Next steps: {card.next_steps}"
+        limit_line = f"  Limitations: {card.limitations}"
+        source_line = f"  Source: {card.primary_source}"
+        blocks.append(
+            "\n".join([header, trigger_line, dx_lines, next_line, limit_line, source_line])
+        )
+
+    return "\n\n".join(blocks)

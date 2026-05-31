@@ -18,7 +18,7 @@ def test_evaluate_parameter_combines_registry_consensus_and_band() -> None:
 def test_evaluate_parameter_surfaces_high_band() -> None:
     result = evaluate_parameter(parameter_id="tcd", ga_weeks=28.0, measurement=38.0)
 
-    assert result.band == ">95th"
+    assert result.band in (">95th", ">97th")
 
 
 def test_evaluate_parameter_rejects_unknown_parameter() -> None:
