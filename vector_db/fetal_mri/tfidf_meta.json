@@ -1,0 +1,25 @@
+{
+  "build_config": {
+    "chunk_words": 450,
+    "manifest_path": "data/numbered_reference_manifest.json",
+    "max_features": null,
+    "overlap_words": 80,
+    "pdf_dir": "papers/corpus"
+  },
+  "chunk_count": 930,
+  "created_at": "2026-05-31T20:56:04.079841+00:00",
+  "deprecated_max_terms_per_chunk": null,
+  "format_version": 2,
+  "matrix_file": "tfidf_matrix.npz",
+  "max_df_ratio": 0.95,
+  "max_features": null,
+  "min_df": 1,
+  "norm": "l2",
+  "retrieval_backend": "tfidf",
+  "sklearn_version": "1.8.0",
+  "sublinear_tf": true,
+  "tfidf_implementation": "sklearn",
+  "vectorizer_class": "sklearn.feature_extraction.text.TfidfVectorizer",
+  "vectorizer_file": "tfidf_vectorizer.joblib",
+  "vocabulary_size": 21665
+}

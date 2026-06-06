@@ -67,11 +67,11 @@ def _mild_vm_card(trigger: str) -> DdxCard:
         label="Mild-to-moderate ventriculomegaly",
         trigger_description=trigger,
         diagnoses=(
-            DdxDiagnosis("Isolated / idiopathic", "~70–80% of cases", "Most common; ND delay ~7.9% (Pagani 2014)."),
+            DdxDiagnosis("Isolated / idiopathic", "~70-80% of cases", "Most common; ND delay ~7.9% (Pagani 2014)."),
             DdxDiagnosis("Chromosomal abnormality (e.g. T21)", "~5%", "Aneuploidy is a significant cause (SMFM 2018)."),
             DdxDiagnosis("Agenesis of the corpus callosum", "~5%", "Frequently associated with VM (SMFM 2018)."),
-            DdxDiagnosis("Aqueductal stenosis", "~5–10%", "Common cause of obstructive VM."),
-            DdxDiagnosis("Congenital infection (CMV)", "~2–5%", "Important to exclude (SMFM 2018)."),
+            DdxDiagnosis("Aqueductal stenosis", "~5-10%", "Common cause of obstructive VM."),
+            DdxDiagnosis("Congenital infection (CMV)", "~2-5%", "Important to exclude (SMFM 2018)."),
         ),
         next_steps=(
             "Recommend dedicated views of corpus callosum, fetal MRI follow-up at 32 weeks, "
@@ -89,14 +89,14 @@ def _mild_vm_card(trigger: str) -> DdxCard:
 def _severe_vm_card(trigger: str) -> DdxCard:
     return DdxCard(
         card_id="severe_ventriculomegaly",
-        label="Severe ventriculomegaly (≥15 mm)",
+        label="Severe ventriculomegaly (>=15 mm)",
         trigger_description=trigger,
         diagnoses=(
             DdxDiagnosis("Aqueductal stenosis", "~20%", "Most common cause of obstructive hydrocephalus."),
             DdxDiagnosis("Associated CNS / non-CNS anomaly", "High", "Frequently associated; worsens prognosis."),
             DdxDiagnosis("Chromosomal abnormality", "Significant", "Risk increases with severity."),
-            DdxDiagnosis("Congenital infection (CMV / toxoplasmosis)", "~1–5%", "Known cause (Giorgione 2022)."),
-            DdxDiagnosis("Isolated / idiopathic", "~10–20%", "Diagnosis of exclusion after extensive workup."),
+            DdxDiagnosis("Congenital infection (CMV / toxoplasmosis)", "~1-5%", "Known cause (Giorgione 2022)."),
+            DdxDiagnosis("Isolated / idiopathic", "~10-20%", "Diagnosis of exclusion after extensive workup."),
         ),
         next_steps=(
             "Recommend detailed neurosonography and fetal MRI, invasive genetic testing with chromosomal "
@@ -117,7 +117,7 @@ def _asymmetric_vm_card(delta_mm: float) -> DdxCard:
         trigger_description=f"Side-to-side atrial difference {delta_mm:.1f} mm > 2 mm threshold.",
         diagnoses=(
             DdxDiagnosis("Isolated / benign variant", "High", "VABS-II scores within normal range for isolated asymmetry (Meyer 2018)."),
-            DdxDiagnosis("Progression to ventriculomegaly", "~37–46%", "Systematic review (Sgayer 2025)."),
+            DdxDiagnosis("Progression to ventriculomegaly", "~37-46%", "Systematic review (Sgayer 2025)."),
             DdxDiagnosis("Associated CNS anomalies", "~24%", "24.2% in asymmetric VM cases (Barzilay 2017)."),
             DdxDiagnosis("Genetic abnormalities", "<5%", "Association reported (Sgayer 2025)."),
             DdxDiagnosis("Intrauterine infection (CMV)", "<5%", "Known cause of fetal brain anomalies."),
@@ -136,13 +136,13 @@ def _small_tcd_card() -> DdxCard:
     return DdxCard(
         card_id="small_tcd",
         label="Small transcerebellar diameter (<5th percentile)",
-        trigger_description="TCD consensus z-score below −1.645.",
+        trigger_description="TCD consensus z-score below -1.645.",
         diagnoses=(
             DdxDiagnosis("Chromosomal abnormalities (aneuploidy, CNVs)", "~55%", "Pathogenic CNVs in 54.6% of cerebellar hypoplasia (Zou 2018)."),
-            DdxDiagnosis("Genetic syndromes (Joubert, CHARGE)", "~15–25%", "Numerous syndromes associated (Aldinger 2016)."),
-            DdxDiagnosis("Associated CNS / non-CNS anomalies", "~10–20%", "Often seen with structural anomalies (Howley 2018)."),
-            DdxDiagnosis("Congenital infection (CMV, Zika)", "~5–15%", "Infections cause cerebellar disruption (Howley 2018)."),
-            DdxDiagnosis("Isolated / idiopathic", "~10–20%", "Significant portion without clear etiology."),
+            DdxDiagnosis("Genetic syndromes (Joubert, CHARGE)", "~15-25%", "Numerous syndromes associated (Aldinger 2016)."),
+            DdxDiagnosis("Associated CNS / non-CNS anomalies", "~10-20%", "Often seen with structural anomalies (Howley 2018)."),
+            DdxDiagnosis("Congenital infection (CMV, Zika)", "~5-15%", "Infections cause cerebellar disruption (Howley 2018)."),
+            DdxDiagnosis("Isolated / idiopathic", "~10-20%", "Significant portion without clear etiology."),
         ),
         next_steps=(
             "Recommend detailed neurosonography, fetal MRI for associated anomalies, amniocentesis "
@@ -177,12 +177,12 @@ def _vermian_hypoplasia_card() -> DdxCard:
     return DdxCard(
         card_id="vermian_hypoplasia",
         label="Vermian hypoplasia (<5th percentile)",
-        trigger_description="Vermis CC or AP diameter z-score below −1.645.",
+        trigger_description="Vermis CC or AP diameter z-score below -1.645.",
         diagnoses=(
-            DdxDiagnosis("Isolated vermian hypoplasia", "~20–30%", "Variable prognosis (Poretti 2014)."),
-            DdxDiagnosis("Dandy-Walker malformation", "~30–40%", "Classic triad: vermian agenesis, cystic 4th V, enlarged PF (SMFM 2020)."),
-            DdxDiagnosis("Chromosomal abnormality (T18, T13)", "~15–20%", "Associated with DWM in ~16% (SMFM 2020)."),
-            DdxDiagnosis("Blake's pouch cyst", "~5–10%", "More favourable prognosis; vermis rotated superiorly."),
+            DdxDiagnosis("Isolated vermian hypoplasia", "~20-30%", "Variable prognosis (Poretti 2014)."),
+            DdxDiagnosis("Dandy-Walker malformation", "~30-40%", "Classic triad: vermian agenesis, cystic 4th V, enlarged PF (SMFM 2020)."),
+            DdxDiagnosis("Chromosomal abnormality (T18, T13)", "~15-20%", "Associated with DWM in ~16% (SMFM 2020)."),
+            DdxDiagnosis("Blake's pouch cyst", "~5-10%", "More favourable prognosis; vermis rotated superiorly."),
             DdxDiagnosis("Genetic syndromes (Joubert, CHARGE)", "~5%", "Require specific genetic testing (Poretti 2014)."),
             DdxDiagnosis("Prenatal infection (CMV)", "<5%", "CMV can disrupt cerebellar development."),
         ),
@@ -200,12 +200,12 @@ def _small_pons_card() -> DdxCard:
     return DdxCard(
         card_id="small_pons",
         label="Small pons AP diameter (<5th percentile)",
-        trigger_description="Pons AP z-score below −1.645.",
+        trigger_description="Pons AP z-score below -1.645.",
         diagnoses=(
-            DdxDiagnosis("Pontocerebellar hypoplasia Type 2 (PCH2A)", "~40–50%", "Most common PCH type (van Dijk 2018)."),
-            DdxDiagnosis("Pontocerebellar hypoplasia Type 1", "~10–20%", "Second most common (van Dijk 2018)."),
+            DdxDiagnosis("Pontocerebellar hypoplasia Type 2 (PCH2A)", "~40-50%", "Most common PCH type (van Dijk 2018)."),
+            DdxDiagnosis("Pontocerebellar hypoplasia Type 1", "~10-20%", "Second most common (van Dijk 2018)."),
             DdxDiagnosis("Other PCH types (3, 4, 5, 6…)", "~10%", "Numerous other genetic subtypes (van Dijk 2018)."),
-            DdxDiagnosis("CASK-related disorders", "~5–10%", "Can present with PCH (Moog 2020)."),
+            DdxDiagnosis("CASK-related disorders", "~5-10%", "Can present with PCH (Moog 2020)."),
             DdxDiagnosis("Tubulinopathies", "~5%", "Associated with brain malformations (Bahi-Buisson 2021)."),
         ),
         next_steps=(
@@ -224,10 +224,10 @@ def _csp_absent_card() -> DdxCard:
         label="Absent cavum septum pellucidum",
         trigger_description="CSP reported as absent or measured < 1 mm.",
         diagnoses=(
-            DdxDiagnosis("Holoprosencephaly (HPE)", "~50–60%", "Most common association, esp. with facial anomalies (Malinger 2005)."),
+            DdxDiagnosis("Holoprosencephaly (HPE)", "~50-60%", "Most common association, esp. with facial anomalies (Malinger 2005)."),
             DdxDiagnosis("Agenesis of the corpus callosum (ACC)", "~55%", "Absent CSP in ~2/3 of ACC cases (SMFM 2020)."),
-            DdxDiagnosis("Severe hydrocephalus / VM", "~10–20%", "Increased ventricular pressure can destroy septal leaves (Malinger 2005)."),
-            DdxDiagnosis("Septo-optic dysplasia (SOD)", "~5–10%", "Classic association; optic nerve hypoplasia difficult to confirm prenatally."),
+            DdxDiagnosis("Severe hydrocephalus / VM", "~10-20%", "Increased ventricular pressure can destroy septal leaves (Malinger 2005)."),
+            DdxDiagnosis("Septo-optic dysplasia (SOD)", "~5-10%", "Classic association; optic nerve hypoplasia difficult to confirm prenatally."),
             DdxDiagnosis("Schizencephaly", "<5%", "Rare but important cause."),
             DdxDiagnosis("Isolated / idiopathic", "<5%", "Diagnosis of exclusion (Malinger 2005)."),
         ),
@@ -247,10 +247,10 @@ def _csp_enlarged_card() -> DdxCard:
         label="Enlarged cavum septum pellucidum (>10 mm)",
         trigger_description="CSP width > 10 mm.",
         diagnoses=(
-            DdxDiagnosis("Normal variant / isolated finding", "~85–90%", "High rate; neurodevelopmental delay still possible (Ding 2019)."),
-            DdxDiagnosis("Cavum vergae", "~5–10%", "Common posterior extension of the CSP."),
+            DdxDiagnosis("Normal variant / isolated finding", "~85-90%", "High rate; neurodevelopmental delay still possible (Ding 2019)."),
+            DdxDiagnosis("Cavum vergae", "~5-10%", "Common posterior extension of the CSP."),
             DdxDiagnosis("Cavum velum interpositum cyst", "<5%", "Triangular shape, more posterior."),
-            DdxDiagnosis("Associated CNS / non-CNS anomalies", "~1–5%", "Altered prognosis with associated findings."),
+            DdxDiagnosis("Associated CNS / non-CNS anomalies", "~1-5%", "Altered prognosis with associated findings."),
             DdxDiagnosis("Symptomatic / obstructive hydrocephalus", "<1%", "Rarely a large CSP cyst causes obstruction."),
         ),
         next_steps=(
@@ -269,9 +269,9 @@ def _cc_absent_card() -> DdxCard:
         label="Absent corpus callosum",
         trigger_description="CC reported as absent.",
         diagnoses=(
-            DdxDiagnosis("Isolated / idiopathic complete ACC", "~65–75% normal ND", "Normal neurodevelopment in 65-75% of isolated ACC (Santo 2012)."),
+            DdxDiagnosis("Isolated / idiopathic complete ACC", "~65-75% normal ND", "Normal neurodevelopment in 65-75% of isolated ACC (Santo 2012)."),
             DdxDiagnosis("Monogenic syndrome", "~30%", "Monogenic disorders identified in 30% of one cohort (Sun 2024)."),
-            DdxDiagnosis("Chromosomal abnormality / CNV", "~15–20%", "Overall rate ~18% (Santo 2012)."),
+            DdxDiagnosis("Chromosomal abnormality / CNV", "~15-20%", "Overall rate ~18% (Santo 2012)."),
             DdxDiagnosis("Associated CNS malformations", "Varies", "ACC frequently with hydrocephalus or cerebellar dysplasia."),
             DdxDiagnosis("In utero insult (ischemic / infectious)", "Unknown", "Secondary dysgenesis from destructive events."),
         ),
@@ -290,10 +290,10 @@ def _cc_short_card() -> DdxCard:
     return DdxCard(
         card_id="cc_short",
         label="Short / dysgenetic corpus callosum (<5th percentile)",
-        trigger_description="CC length z-score below −1.645 with CSP present.",
+        trigger_description="CC length z-score below -1.645 with CSP present.",
         diagnoses=(
             DdxDiagnosis("Partial / hypogenetic ACC", "Most cases", "CC present but abnormally short."),
-            DdxDiagnosis("Monogenic syndrome", "~25–30%", "Consistent with Sun 2024 cohort, same caveat."),
+            DdxDiagnosis("Monogenic syndrome", "~25-30%", "Consistent with Sun 2024 cohort, same caveat."),
             DdxDiagnosis("Chromosomal / CNV", "~15%", "Estimate."),
         ),
         next_steps=(
@@ -312,9 +312,9 @@ def _third_ventricle_wide_card() -> DdxCard:
         trigger_description="Third ventricle width > 3.5 mm (Hertzberg 1997 threshold).",
         diagnoses=(
             DdxDiagnosis("Aqueductal stenosis", "~55%", "Common cause of obstructive hydrocephalus (Hertzberg 1997)."),
-            DdxDiagnosis("Agenesis / dysgenesis of CC", "~10–20%", "CC malformation can alter CSF dynamics."),
-            DdxDiagnosis("Holoprosencephaly (mild / lobar)", "~5–15%", "Incomplete forebrain cleavage."),
-            DdxDiagnosis("Interhemispheric cyst / cavum veli interpositi", "~5–10%", "Mass effect near 3rd ventricle."),
+            DdxDiagnosis("Agenesis / dysgenesis of CC", "~10-20%", "CC malformation can alter CSF dynamics."),
+            DdxDiagnosis("Holoprosencephaly (mild / lobar)", "~5-15%", "Incomplete forebrain cleavage."),
+            DdxDiagnosis("Interhemispheric cyst / cavum veli interpositi", "~5-10%", "Mass effect near 3rd ventricle."),
             DdxDiagnosis("Isolated finding", "Variable", "May be normal variant; close follow-up warranted."),
         ),
         next_steps=(
@@ -334,12 +334,12 @@ def _microcephaly_card() -> DdxCard:
     return DdxCard(
         card_id="microcephaly_pattern",
         label="Microcephaly (skull BPD <3rd percentile)",
-        trigger_description="Skull BPD z-score ≤ −1.881 (<3rd percentile).",
+        trigger_description="Skull BPD z-score <= -1.881 (<3rd percentile).",
         diagnoses=(
             DdxDiagnosis("Genetic etiologies (syndromic / non-syndromic)", "~50%", "Genetic factors in ~50% (Wang 2023)."),
-            DdxDiagnosis("Congenital infections (CMV, Zika, Toxo)", "~15–20%", "Major cause of acquired microcephaly (Hanzlik 2017)."),
-            DdxDiagnosis("Perinatal brain injury (hypoxic / ischemic)", "~15–20%", "Insults disrupt brain development (von der Hagen 2014)."),
-            DdxDiagnosis("Maternal / environmental factors", "~5–10%", "Teratogens, malnutrition, metabolic disease (ISUOG 2019)."),
+            DdxDiagnosis("Congenital infections (CMV, Zika, Toxo)", "~15-20%", "Major cause of acquired microcephaly (Hanzlik 2017)."),
+            DdxDiagnosis("Perinatal brain injury (hypoxic / ischemic)", "~15-20%", "Insults disrupt brain development (von der Hagen 2014)."),
+            DdxDiagnosis("Maternal / environmental factors", "~5-10%", "Teratogens, malnutrition, metabolic disease (ISUOG 2019)."),
             DdxDiagnosis("Isolated / idiopathic", "Variable", "Significant portion without identifiable cause."),
         ),
         next_steps=(
@@ -356,12 +356,12 @@ def _macrocephaly_card() -> DdxCard:
     return DdxCard(
         card_id="macrocephaly_pattern",
         label="Macrocephaly (skull BPD >97th percentile)",
-        trigger_description="Skull BPD z-score ≥ +1.881 (>97th percentile).",
+        trigger_description="Skull BPD z-score >= +1.881 (>97th percentile).",
         diagnoses=(
-            DdxDiagnosis("Benign familial macrocephaly", "~50–60%", "Most common cause; family history of large head (Shinar 2023)."),
+            DdxDiagnosis("Benign familial macrocephaly", "~50-60%", "Most common cause; family history of large head (Shinar 2023)."),
             DdxDiagnosis("Megalencephaly (non-syndromic)", "Variable", "Disorder of neuronal proliferation (Shinar 2023)."),
-            DdxDiagnosis("Hydrocephalus", "~10–20%", "Common secondary cause."),
-            DdxDiagnosis("Genetic syndromes (Sotos, PTEN)", "~5–10%", "Overgrowth syndromes."),
+            DdxDiagnosis("Hydrocephalus", "~10-20%", "Common secondary cause."),
+            DdxDiagnosis("Genetic syndromes (Sotos, PTEN)", "~5-10%", "Overgrowth syndromes."),
             DdxDiagnosis("Brain tumour", "<1%", "Rare cause."),
         ),
         next_steps=(
@@ -380,9 +380,9 @@ def _acc_combined_card() -> DdxCard:
         label="Agenesis of corpus callosum (combined pattern)",
         trigger_description="CC absent and CSP absent together.",
         diagnoses=(
-            DdxDiagnosis("Complete ACC — isolated", "~65–75% normal ND", "Normal neurodevelopment in 65-75% of isolated ACC (Santo 2012)."),
+            DdxDiagnosis("Complete ACC — isolated", "~65-75% normal ND", "Normal neurodevelopment in 65-75% of isolated ACC (Santo 2012)."),
             DdxDiagnosis("Monogenic syndrome", "~30%", "Sun 2024 cohort (n=40); exome sequencing indicated."),
-            DdxDiagnosis("Chromosomal / pathogenic CNV", "~15–20%", "Overall rate ~18%."),
+            DdxDiagnosis("Chromosomal / pathogenic CNV", "~15-20%", "Overall rate ~18%."),
         ),
         next_steps=(
             "Complete ACC confirmed by absent CSP and CC. Recommend detailed fetal MRI, chromosomal "
@@ -423,7 +423,7 @@ def _hydrocephalus_combined_card() -> DdxCard:
         trigger_description="Severe ventriculomegaly with dilated third ventricle (>3.5 mm).",
         diagnoses=(
             DdxDiagnosis("Aqueductal stenosis", "~70%", "Most common cause of triventricular hydrocephalus."),
-            DdxDiagnosis("X-linked L1CAM mutation", "~5–10%", "Causes X-linked aqueductal stenosis."),
+            DdxDiagnosis("X-linked L1CAM mutation", "~5-10%", "Causes X-linked aqueductal stenosis."),
             DdxDiagnosis("Posterior fossa mass / Chiari II", "~10%", "Causes obstructive hydrocephalus."),
         ),
         next_steps=(
@@ -485,17 +485,17 @@ def _chiari_ii_card(p_ontd: float) -> DdxCard:
         card_id="chiari_ii_open_ntd",
         label="Chiari II / open neural tube defect (combined pattern)",
         trigger_description=(
-            f"TDPF z < −2 and CSA z < −2; Mahalanobis ONTD posterior probability {p_ontd:.0%}."
+            f"TDPF z < -2 and CSA z < -2; Mahalanobis ONTD posterior probability {p_ontd:.0%}."
         ),
         diagnoses=(
             DdxDiagnosis(
                 "Chiari II — open neural tube defect (myelomeningocele / myeloschisis)",
-                "~85–90% when both z-scores below −2",
+                "~85-90% when both z-scores below -2",
                 "~91% sensitivity and ~93% specificity for ONTD vs controls (Woitek 2014).",
             ),
-            DdxDiagnosis("Closed neural tube defect (lipomyelomeningocele, meningocele)", "~5–10%", "Milder posterior-fossa changes than open NTDs (Woitek 2014)."),
-            DdxDiagnosis("Severe vermian hypoplasia / Dandy-Walker spectrum", "~3–5%", "CSA typically preserved or increased in DWM."),
-            DdxDiagnosis("Benign small posterior fossa", "<1%", "Rarely both z-scores fall below −2 in a healthy fetus."),
+            DdxDiagnosis("Closed neural tube defect (lipomyelomeningocele, meningocele)", "~5-10%", "Milder posterior-fossa changes than open NTDs (Woitek 2014)."),
+            DdxDiagnosis("Severe vermian hypoplasia / Dandy-Walker spectrum", "~3-5%", "CSA typically preserved or increased in DWM."),
+            DdxDiagnosis("Benign small posterior fossa", "<1%", "Rarely both z-scores fall below -2 in a healthy fetus."),
         ),
         next_steps=(
             "Recommend dedicated examination of the fetal spine on the same MRI examination (sagittal and axial T2) "
@@ -504,7 +504,7 @@ def _chiari_ii_card(p_ontd: float) -> DdxCard:
         ),
         limitations=(
             "Discriminator trained on a single-centre cohort (n=44 Woitek 2014) and validated on 60 open NTD cases "
-            "(Aertsen 2019). Performance uncertain outside GA 21–37 weeks or with motion-degraded mid-sagittal images. "
+            "(Aertsen 2019). Performance uncertain outside GA 21-37 weeks or with motion-degraded mid-sagittal images. "
             "FLAG: research-mode card pending local calibration (SPEC §7.5)."
         ),
         primary_source="Woitek R et al. PLOS ONE. 2014;9(11):e112585.",
@@ -600,7 +600,7 @@ def evaluate_ddx(
             sides.append(f"right {atr_r:.1f} mm")
         if severe_l:
             sides.append(f"left {atr_l:.1f} mm")
-        fired.append(_severe_vm_card(f"Atrial diameter ≥15 mm: {', '.join(sides)}."))
+        fired.append(_severe_vm_card(f"Atrial diameter >=15 mm: {', '.join(sides)}."))
 
     if atr_r is not None and atr_l is not None:
         delta = abs(atr_r - atr_l)
