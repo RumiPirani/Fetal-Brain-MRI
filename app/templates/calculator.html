@@ -35,10 +35,9 @@
 <!-- Calculator form -->
 <form id="calc-form" method="post" action="/calculate"
       hx-post="/calculate"
-      hx-target="#calc-results"
+      hx-target="body"
       hx-swap="outerHTML"
-      hx-select="#calc-results"
-      hx-trigger="input delay:500ms from:.calc-input, submit">
+      hx-trigger="input delay:500ms, submit">
 
 <!-- Sticky top bar -->
 <header class="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm px-4 py-2 flex items-center gap-6">
@@ -297,6 +296,24 @@
 </form>
 
 <script>
+// Prevent the chat textarea and the file-paste textarea from bubbling input
+// events up to the calc form, which would otherwise trigger a recalculation.
+(function() {
+  function stopBubble(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', function(e) { e.stopPropagation(); });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      stopBubble('chat-question');
+      stopBubble('parse-textarea');
+    });
+  } else {
+    stopBubble('chat-question');
+    stopBubble('parse-textarea');
+  }
+})();
+
 function copyReport() {
   const ta = document.getElementById('report-text');
   navigator.clipboard.writeText(ta.value).then(() => {
