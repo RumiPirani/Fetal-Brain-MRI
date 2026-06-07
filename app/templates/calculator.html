@@ -63,6 +63,46 @@
 
   <!-- LEFT: Measurement worksheet -->
   <div class="w-1/2 space-y-4">
+
+    <!-- Load from file panel -->
+    <div class="bg-white rounded border border-gray-200 shadow-sm">
+      <button type="button" onclick="toggleFilePanel()"
+              class="w-full px-3 py-2 flex items-center justify-between text-xs font-semibold text-gray-600 uppercase tracking-wider hover:bg-gray-50">
+        <span>&#128196; Load from text file</span>
+        <span id="file-panel-arrow" class="text-gray-400">&#9660;</span>
+      </button>
+      <div id="file-panel" class="hidden border-t border-gray-200 p-3 space-y-2">
+        <p class="text-xs text-gray-500">
+          Upload or paste measurements in any format —
+          <code class="bg-gray-100 px-1 rounded">key: value</code>,
+          <code class="bg-gray-100 px-1 rounded">key = value</code>,
+          CSV (header row or two-column), or free-text report lines.
+          Supported keys: ga, tcd, atrium_r, atrium_l, skull_bpd, skull_ofd,
+          brain_bpd, brain_ofd_l/r, csp, cc_length, vermis_cc, vermis_ap,
+          pons_ap, third_ventricle, tva_degrees, cisterna_magna_depth, tdpf, csa.
+        </p>
+        <!-- File picker — populates the textarea -->
+        <input type="file" id="text-file-input" accept=".txt,.csv,.tsv,.text"
+               onchange="loadFileIntoTextarea(this)"
+               class="block text-xs text-gray-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0
+                      file:text-xs file:font-medium file:bg-gray-100 file:text-gray-700
+                      hover:file:bg-gray-200 cursor-pointer">
+        <textarea id="parse-textarea" rows="6"
+                  placeholder="Paste measurements here, e.g.:&#10;ga = 28+3&#10;tcd = 33.0 mm&#10;atrium_r = 8.5&#10;skull_bpd: 62"
+                  class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs resize-y focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  style="font-family:ui-monospace,monospace"></textarea>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="parseAndFill()"
+                  class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+            Parse &amp; Fill
+          </button>
+          <span id="parse-status" class="text-xs text-gray-500"></span>
+        </div>
+        <!-- Preview of what will be filled -->
+        <div id="parse-preview" class="hidden text-xs space-y-1"></div>
+      </div>
+    </div>
+
     {% set sections = namespace(current=None) %}
     {% for field_name, label, unit, section in param_fields %}
 
@@ -294,6 +334,93 @@ document.addEventListener('htmx:afterSwap', function(e) {
     e.target.scrollTop = e.target.scrollHeight;
   }
 });
+
+// ---------------------------------------------------------------------------
+// Load-from-file panel
+// ---------------------------------------------------------------------------
+function toggleFilePanel() {
+  var panel = document.getElementById('file-panel');
+  var arrow = document.getElementById('file-panel-arrow');
+  var hidden = panel.classList.toggle('hidden');
+  arrow.innerHTML = hidden ? '&#9660;' : '&#9650;';
+}
+
+function loadFileIntoTextarea(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('parse-textarea').value = e.target.result;
+    document.getElementById('parse-status').textContent = 'File loaded — click Parse & Fill.';
+  };
+  reader.readAsText(file);
+}
+
+function parseAndFill() {
+  var text = document.getElementById('parse-textarea').value.trim();
+  if (!text) {
+    document.getElementById('parse-status').textContent = 'Paste some text first.';
+    return;
+  }
+
+  var status = document.getElementById('parse-status');
+  status.textContent = 'Parsing…';
+
+  var formData = new FormData();
+  formData.append('text', text);
+
+  fetch('/parse-text', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var filled = 0;
+      var skipped = 0;
+
+      // Apply GA
+      if (data.values['ga']) {
+        var gaEl = document.querySelector('[name="ga"]');
+        if (gaEl) { gaEl.value = data.values['ga']; filled++; }
+      }
+
+      // Apply numeric parameters
+      Object.entries(data.values).forEach(function([param, val]) {
+        if (param === 'ga') return;
+        var el = document.querySelector('[name="' + param + '"]');
+        if (el) {
+          el.value = val;
+          filled++;
+        } else {
+          skipped++;
+        }
+      });
+
+      // Show preview
+      var preview = document.getElementById('parse-preview');
+      var rows = Object.entries(data.values).map(function([k, v]) {
+        return '<div class="flex gap-2"><span class="text-gray-400 w-36 truncate">' + k + '</span>'
+             + '<span class="font-mono text-gray-800">' + v + '</span></div>';
+      }).join('');
+      if (data.unrecognized.length) {
+        rows += '<div class="mt-1 text-gray-400">Unrecognized: ' + data.unrecognized.join(', ') + '</div>';
+      }
+      preview.innerHTML = rows || '<div class="text-gray-400">No values recognised.</div>';
+      preview.classList.remove('hidden');
+
+      if (filled > 0) {
+        // Trigger recalculation
+        var anyInput = document.querySelector('.calc-input');
+        if (anyInput) htmx.trigger(document.getElementById('calc-form'), 'input');
+        status.textContent = filled + ' field' + (filled === 1 ? '' : 's') + ' filled.';
+        if (data.warnings && data.warnings.length) {
+          status.textContent += ' ⚠ ' + data.warnings.join(' ');
+        }
+      } else {
+        status.textContent = 'No matching fields found. Check the key names.';
+      }
+    })
+    .catch(function() {
+      document.getElementById('parse-status').textContent = 'Parse request failed.';
+    });
+}
 </script>
 
 </body>

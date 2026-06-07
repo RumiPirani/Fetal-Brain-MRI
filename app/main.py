@@ -13,13 +13,14 @@ from typing import Annotated
 
 import jinja2
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from fetal_brain_mri.calculator import CaseResult, evaluate_case, evaluate_parameter
 from fetal_brain_mri.gestational_age import parse_gestational_age
 from fetal_brain_mri.inputs import MeasurementInput
 from fetal_brain_mri.report import render_structured_report
+from fetal_brain_mri.text_parser import parse_text
 from fetal_rag.config import load_env_file
 from fetal_rag.rag import TfidfRagEngine
 
@@ -164,6 +165,20 @@ async def calculate(request: Request) -> HTMLResponse:
             "form": form,
         },
     )
+
+
+@app.post("/parse-text", response_class=JSONResponse)
+async def parse_text_endpoint(request: Request) -> JSONResponse:
+    form_data = await request.form()
+    text = str(form_data.get("text", "")).strip()
+    if not text:
+        return JSONResponse({"values": {}, "unrecognized": [], "warnings": ["No text provided."]})
+    result = parse_text(text)
+    return JSONResponse({
+        "values": result.values,
+        "unrecognized": result.unrecognized,
+        "warnings": result.warnings,
+    })
 
 
 @app.post("/chat", response_class=HTMLResponse)
