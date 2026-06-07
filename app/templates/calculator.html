@@ -296,21 +296,28 @@
 </form>
 
 <script>
-// Prevent the chat textarea and the file-paste textarea from bubbling input
-// events up to the calc form, which would otherwise trigger a recalculation.
+// Prevent non-calc inputs from bubbling events to the calc form and
+// triggering a spurious recalculation.
+// File inputs fire both 'input' and 'change' when a file is selected;
+// without stopPropagation the body swap fires before the FileReader
+// completes, wiping the textarea before the user can click Parse & Fill.
 (function() {
-  function stopBubble(id) {
+  function stopBubble(id, events) {
     var el = document.getElementById(id);
-    if (el) el.addEventListener('input', function(e) { e.stopPropagation(); });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      stopBubble('chat-question');
-      stopBubble('parse-textarea');
+    if (!el) return;
+    (events || ['input']).forEach(function(evt) {
+      el.addEventListener(evt, function(e) { e.stopPropagation(); });
     });
-  } else {
+  }
+  function attachGuards() {
     stopBubble('chat-question');
     stopBubble('parse-textarea');
+    stopBubble('text-file-input', ['input', 'change']);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachGuards);
+  } else {
+    attachGuards();
   }
 })();
 
