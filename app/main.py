@@ -80,6 +80,32 @@ _PARAM_FIELDS = [
 _NON_Z_PARAMS = {"tva_degrees", "cisterna_magna_depth"}  # qualitative, not registered
 
 
+_Z_5TH = 1.6449  # z at 5th percentile
+
+
+def _compute_param_ranges(ga_weeks: float) -> dict[str, tuple[float, float]]:
+    """Return expected 5th–95th percentile range (low, high) for each parameter at ga_weeks."""
+    from fetal_brain_mri.registry import get_sources  # local import avoids circular at module level
+
+    ranges: dict[str, tuple[float, float]] = {}
+    for field_name, *_ in _PARAM_FIELDS:
+        if field_name in _NON_Z_PARAMS:
+            continue
+        try:
+            sources = get_sources(field_name)
+            in_range = [s for s in sources if s.is_in_range(ga_weeks)] or sources
+            means = [s.model.mean(ga_weeks) for s in in_range]
+            sigmas = [s.model.sigma(ga_weeks) for s in in_range]
+            avg_mean = sum(means) / len(means)
+            avg_sigma = sum(sigmas) / len(sigmas)
+            low = avg_mean - _Z_5TH * avg_sigma
+            high = avg_mean + _Z_5TH * avg_sigma
+            ranges[field_name] = (round(low, 1), round(high, 1))
+        except Exception:
+            pass
+    return ranges
+
+
 def _parse_float(value: str | None) -> float | None:
     if value is None:
         return None
@@ -128,6 +154,7 @@ async def calculator_page(request: Request) -> HTMLResponse:
             "case": None,
             "report_text": "",
             "error": None,
+            "param_ranges": {},
         },
     )
 
@@ -142,9 +169,11 @@ async def calculate(request: Request) -> HTMLResponse:
     case: CaseResult | None = None
     report_text = ""
 
+    param_ranges: dict = {}
     if inputs is None:
         error = "Please enter a valid gestational age (e.g. 28+3 or 28.4)."
     else:
+        param_ranges = _compute_param_ranges(inputs.ga_weeks)
         try:
             case = evaluate_case(inputs)
             report_text = render_structured_report(
@@ -163,6 +192,7 @@ async def calculate(request: Request) -> HTMLResponse:
             "report_text": report_text,
             "error": error,
             "form": form,
+            "param_ranges": param_ranges,
         },
     )
 

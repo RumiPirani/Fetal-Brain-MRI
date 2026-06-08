@@ -204,37 +204,52 @@
           <div>
       {% endif %}
 
-      <div class="param-row" style="padding:8px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f8fafc;">
-        <label style="font-size:.78rem; color:#475569; width:170px; flex-shrink:0; font-weight:500;">{{ label }}</label>
+      <div class="param-row" style="padding:8px 16px; display:flex; align-items:flex-start; gap:10px; border-bottom:1px solid #f8fafc;">
+        <label style="font-size:.78rem; color:#475569; width:170px; flex-shrink:0; font-weight:500; align-self:center;">{{ label }}</label>
 
         {% if field_name == "csp" %}
-          <input type="number" name="csp" step="0.1" min="0" max="30"
-                 value="{{ form.csp if form else '' }}" placeholder="mm"
-                 class="calc-input field"
-                 style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
-          <label style="display:flex; align-items:center; gap:5px; font-size:.72rem; color:#94a3b8; cursor:pointer; flex-shrink:0;">
+          <div style="display:flex; flex-direction:column; gap:1px; flex-shrink:0;">
+            <input type="number" name="csp" step="0.1" min="0" max="30"
+                   value="{{ form.csp if form else '' }}" placeholder="mm"
+                   class="calc-input field"
+                   style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
+            {% if param_ranges and 'csp' in param_ranges %}
+            <span style="font-size:.6rem; color:#b0bec5; text-align:right; padding-right:2px; white-space:nowrap;">Normal range: {{ param_ranges['csp'][0] }}–{{ param_ranges['csp'][1] }} {{ unit }}</span>
+            {% endif %}
+          </div>
+          <label style="display:flex; align-items:center; gap:5px; font-size:.72rem; color:#94a3b8; cursor:pointer; flex-shrink:0; align-self:center;">
             <input type="checkbox" name="csp_absent"
                    {% if form and form.get('csp_absent') == 'on' %}checked{% endif %}
                    class="calc-input" style="accent-color:#6366f1;">
             absent
           </label>
         {% elif field_name == "cc_length" %}
-          <input type="number" name="cc_length" step="0.1" min="0" max="100"
-                 value="{{ form.cc_length if form else '' }}" placeholder="mm"
-                 class="calc-input field"
-                 style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
-          <label style="display:flex; align-items:center; gap:5px; font-size:.72rem; color:#94a3b8; cursor:pointer; flex-shrink:0;">
+          <div style="display:flex; flex-direction:column; gap:1px; flex-shrink:0;">
+            <input type="number" name="cc_length" step="0.1" min="0" max="100"
+                   value="{{ form.cc_length if form else '' }}" placeholder="mm"
+                   class="calc-input field"
+                   style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
+            {% if param_ranges and 'cc_length' in param_ranges %}
+            <span style="font-size:.6rem; color:#b0bec5; text-align:right; padding-right:2px; white-space:nowrap;">Normal range: {{ param_ranges['cc_length'][0] }}–{{ param_ranges['cc_length'][1] }} {{ unit }}</span>
+            {% endif %}
+          </div>
+          <label style="display:flex; align-items:center; gap:5px; font-size:.72rem; color:#94a3b8; cursor:pointer; flex-shrink:0; align-self:center;">
             <input type="checkbox" name="cc_absent"
                    {% if form and form.get('cc_absent') == 'on' %}checked{% endif %}
                    class="calc-input" style="accent-color:#6366f1;">
             absent
           </label>
         {% else %}
-          <input type="number" name="{{ field_name }}" step="0.1" min="0" max="999"
-                 value="{{ form[field_name] if form and field_name in form else '' }}"
-                 placeholder="{{ unit }}"
-                 class="calc-input field"
-                 style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
+          <div style="display:flex; flex-direction:column; gap:1px; flex-shrink:0;">
+            <input type="number" name="{{ field_name }}" step="0.1" min="0" max="999"
+                   value="{{ form[field_name] if form and field_name in form else '' }}"
+                   placeholder="{{ unit }}"
+                   class="calc-input field"
+                   style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
+            {% if param_ranges and field_name in param_ranges %}
+            <span style="font-size:.6rem; color:#b0bec5; text-align:right; padding-right:2px; white-space:nowrap;">Normal range: {{ param_ranges[field_name][0] }}–{{ param_ranges[field_name][1] }} {{ unit }}</span>
+            {% endif %}
+          </div>
         {% endif %}
 
         {% if case %}
@@ -242,8 +257,8 @@
             {% set r = case.parameters[field_name] %}
             {% set band = r.band %}
             {% set pill = 'band-normal' if band == 'normal' else 'band-low' if band in ('<5th','<3rd') else 'band-high' %}
-            <span class="band-pill {{ pill }}">{{ band }}</span>
-            <span style="font-size:.75rem; color:#64748b; display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+            <span class="band-pill {{ pill }}" style="align-self:center;">{{ band }}</span>
+            <span style="font-size:.75rem; color:#64748b; display:flex; align-items:center; gap:5px; flex-wrap:wrap; align-self:center;">
               <span class="mono" style="font-weight:700; color:#1e293b; font-size:.8rem;">
                 Z {{ '{:+.2f}'.format(r.consensus.consensus_z) }}
               </span>
@@ -252,7 +267,7 @@
               <span style="color:#cbd5e1;">·</span>
               <span class="agr agr-{{ r.consensus.agreement }}">{{ r.consensus.agreement }}</span>
             </span>
-            <details style="margin-left:auto; flex-shrink:0;">
+            <details style="margin-left:auto; flex-shrink:0; align-self:center;">
               <summary style="font-size:.7rem; color:#6366f1; cursor:pointer; list-style:none; font-weight:600;">
                 {{ r.consensus.sources | length }} src
               </summary>
