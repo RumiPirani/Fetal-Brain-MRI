@@ -6,102 +6,191 @@
   <title>Fetal Brain MRI Biometry Calculator</title>
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    .band-normal   { color: #166534; font-weight: 600; }
-    .band-low      { color: #9a3412; font-weight: 600; }
-    .band-high     { color: #9a3412; font-weight: 600; }
-    .band-absent   { color: #6b21a8; font-weight: 600; }
-    .agree-agree   { color: #166534; }
-    .agree-disagree{ color: #9a3412; }
-    .agree-single  { color: #374151; }
-    textarea { font-family: ui-monospace, monospace; font-size: 0.82rem; }
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    code, textarea, .mono { font-family: ui-monospace, 'Cascadia Code', monospace; }
+
+    /* ── Band pills ── */
+    .band-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 2px 9px; border-radius: 9999px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; flex-shrink: 0; white-space: nowrap;
+    }
+    .band-normal  { background: #dcfce7; color: #15803d; }
+    .band-low     { background: #fee2e2; color: #b91c1c; }
+    .band-high    { background: #fee2e2; color: #b91c1c; }
+    .band-absent  { background: #f3e8ff; color: #7e22ce; }
+
+    /* ── Agreement badges ── */
+    .agr {
+      display: inline-flex; align-items: center;
+      padding: 1px 6px; border-radius: 4px;
+      font-size: 0.62rem; font-weight: 600; flex-shrink: 0;
+    }
+    .agr-agree    { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .agr-disagree { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+    .agr-single   { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+
+    /* ── HTMX indicator ── */
     .htmx-indicator { display: none; }
-    .htmx-request .htmx-indicator { display: flex; }
+    .htmx-request .htmx-indicator,
     .htmx-request.htmx-indicator { display: flex; }
+
+    /* ── Scrollbar styling ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+
+    /* ── Input focus ring ── */
+    .field:focus { outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,.2); border-color: #6366f1; }
+
+    /* ── Section left-bar header ── */
+    .section-head {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #64748b;
+      padding: 8px 16px 6px; border-bottom: 1px solid #f1f5f9;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-head::before {
+      content: ''; display: block; width: 3px; height: 12px;
+      border-radius: 2px; background: #6366f1; flex-shrink: 0;
+    }
+
+    /* ── Chat bubbles ── */
+    .chat-user   { background: #eef2ff; border-radius: 12px 12px 4px 12px; }
+    .chat-ai     { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px 12px 12px 12px; }
+
+    /* ── Smooth transitions ── */
+    .param-row { transition: background 0.1s; }
+    .param-row:hover { background: #fafbff; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen">
 
-<!-- Separate form for the chat, must live outside the calc form (no nested forms in HTML).
-     The visible textarea and button reference it via form="chat-form". -->
-<form id="chat-form"
-      hx-post="/chat"
-      hx-target="#chat-messages"
-      hx-swap="beforeend"
-      hx-indicator="#chat-spinner"
-      style="display:none;">
-</form>
+<body style="background:#f1f5f9; min-height:100vh; color:#0f172a;">
 
-<!-- Calculator form -->
+<!-- Hidden chat form (must live outside calc form) -->
+<form id="chat-form" hx-post="/chat" hx-target="#chat-messages"
+      hx-swap="beforeend" hx-indicator="#chat-spinner" style="display:none;"></form>
+
+<!-- ══════════════════ CALCULATOR FORM ══════════════════ -->
 <form id="calc-form" method="post" action="/calculate"
-      hx-post="/calculate"
-      hx-target="body"
-      hx-swap="outerHTML"
+      hx-post="/calculate" hx-target="body" hx-swap="outerHTML"
       hx-trigger="input delay:500ms, submit">
 
-<!-- Sticky top bar -->
-<header class="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm px-4 py-2 flex items-center gap-6">
-  <span class="font-semibold text-blue-800 text-sm tracking-wide">Fetal Brain MRI Biometry Calculator</span>
+<!-- ── HEADER ── -->
+<header class="sticky top-0 z-20" style="background:#1e293b; box-shadow:0 2px 16px rgba(0,0,0,.25);">
+  <div class="px-5 py-3 flex items-center gap-4 flex-wrap">
 
-  <label class="text-xs font-medium text-gray-600">Gestational Age</label>
-  <input type="text" name="ga" placeholder="e.g. 28+3 or 28.4"
-         value="{{ form.ga if form else '' }}"
-         class="calc-input border border-gray-300 rounded px-2 py-1 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-300">
-  <span class="text-xs text-gray-400">weeks+days or decimal</span>
-  <span class="ml-4 text-xs text-gray-400 italic">Multi-source consensus | disagreement threshold: 1.0 SD</span>
+    <!-- Brand -->
+    <div class="flex items-center gap-2.5 flex-shrink-0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="11" rx="7" ry="8"/>
+        <path d="M9 11 Q12 7 15 11"/>
+        <path d="M9 14 Q12 18 15 14"/>
+        <line x1="12" y1="3" x2="12" y2="19"/>
+      </svg>
+      <div>
+        <div style="color:#f1f5f9; font-size:.85rem; font-weight:700; line-height:1.1; letter-spacing:-.01em;">
+          Fetal Brain MRI
+        </div>
+        <div style="color:#94a3b8; font-size:.65rem; font-weight:500; letter-spacing:.04em; text-transform:uppercase;">
+          Biometry Calculator
+        </div>
+      </div>
+    </div>
 
+    <!-- Divider -->
+    <div style="width:1px; height:28px; background:#334155; flex-shrink:0;"></div>
+
+    <!-- GA input -->
+    <div class="flex items-center gap-2.5">
+      <label style="color:#94a3b8; font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; flex-shrink:0;">
+        GA
+      </label>
+      <input type="text" name="ga" placeholder="28+3 or 28.4"
+             value="{{ form.ga if form else '' }}"
+             class="calc-input field"
+             style="background:#334155; border:1px solid #475569; color:#f1f5f9; border-radius:8px;
+                    padding:5px 12px; font-size:.82rem; width:130px;"
+             autocomplete="off">
+      <span style="color:#64748b; font-size:.7rem;">weeks+days</span>
+    </div>
+
+    <!-- Mode badge -->
+    <span style="margin-left:auto; background:#1e3a5f; color:#93c5fd; font-size:.65rem;
+                 font-weight:600; letter-spacing:.04em; padding:4px 10px; border-radius:6px;
+                 border:1px solid #1d4ed8; flex-shrink:0;">
+      Multi-source consensus · Δ1.0 SD
+    </span>
+
+    <!-- Clear -->
+    <button type="button" onclick="location.href='/'"
+            style="color:#64748b; font-size:.72rem; background:none; border:none; cursor:pointer;
+                   padding:4px 8px; border-radius:6px; transition:background .15s;"
+            onmouseover="this.style.background='#334155'; this.style.color='#e2e8f0';"
+            onmouseout="this.style.background=''; this.style.color='#64748b';">
+      Clear all
+    </button>
+  </div>
 </header>
 
 {% if error %}
-<div class="mx-4 mt-3 px-4 py-2 bg-red-50 border border-red-300 text-red-700 text-sm rounded">
+<div style="margin:12px 16px; padding:10px 14px; background:#fff1f2; border:1px solid #fecdd3;
+            color:#be123c; font-size:.8rem; border-radius:10px;">
   {{ error }}
 </div>
 {% endif %}
 
-<div class="flex gap-4 p-4" style="min-height: calc(100vh - 56px);">
+<!-- ══════════════════ MAIN LAYOUT ══════════════════ -->
+<div class="flex gap-4 p-4" style="min-height:calc(100vh - 60px); align-items:flex-start;">
 
-  <!-- LEFT: Measurement worksheet -->
-  <div class="w-1/2 space-y-4">
+  <!-- ── LEFT: Measurement worksheet ── -->
+  <div class="w-1/2 flex flex-col gap-3">
 
     <!-- Load from file panel -->
-    <div class="bg-white rounded border border-gray-200 shadow-sm">
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;
+                box-shadow:0 1px 4px rgba(0,0,0,.06);">
       <button type="button" onclick="toggleFilePanel()"
-              class="w-full px-3 py-2 flex items-center justify-between text-xs font-semibold text-gray-600 uppercase tracking-wider hover:bg-gray-50">
-        <span>&#128196; Load from text file</span>
-        <span id="file-panel-arrow" class="text-gray-400">&#9660;</span>
+              style="width:100%; padding:10px 16px; display:flex; align-items:center; justify-content:space-between;
+                     background:none; border:none; cursor:pointer; text-align:left;"
+              onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='';">
+        <span style="font-size:.72rem; font-weight:700; color:#64748b; letter-spacing:.05em; text-transform:uppercase; display:flex; align-items:center; gap:8px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Load from text file
+        </span>
+        <span id="file-panel-arrow" style="color:#94a3b8; font-size:.7rem;">▼</span>
       </button>
-      <div id="file-panel" class="hidden border-t border-gray-200 p-3 space-y-2">
-        <p class="text-xs text-gray-500">
+      <div id="file-panel" class="hidden" style="border-top:1px solid #f1f5f9; padding:12px 16px; display:none; flex-direction:column; gap:10px;">
+        <p style="font-size:.72rem; color:#94a3b8; line-height:1.5;">
           Upload or paste measurements in any format —
-          <code class="bg-gray-100 px-1 rounded">key: value</code>,
-          <code class="bg-gray-100 px-1 rounded">key = value</code>,
-          CSV (header row or two-column), or free-text report lines.
-          Supported keys: ga, tcd, atrium_r, atrium_l, skull_bpd, skull_ofd,
-          brain_bpd, brain_ofd_l/r, csp, cc_length, vermis_cc, vermis_ap,
-          pons_ap, third_ventricle, tva_degrees, cisterna_magna_depth, tdpf, csa.
+          <code style="background:#f1f5f9; padding:1px 5px; border-radius:4px; font-size:.7rem;">key = value</code>,
+          <code style="background:#f1f5f9; padding:1px 5px; border-radius:4px; font-size:.7rem;">CSV</code>,
+          or free-text report lines. Supported: ga, tcd, atrium_r/l, skull_bpd, skull_ofd, brain_bpd, brain_ofd_l/r, csp, cc_length, vermis_cc/ap, pons_ap, third_ventricle, tva_degrees, cisterna_magna_depth, tdpf, csa.
         </p>
-        <!-- File picker — populates the textarea -->
         <input type="file" id="text-file-input" accept=".txt,.csv,.tsv,.text"
                onchange="loadFileIntoTextarea(this)"
-               class="block text-xs text-gray-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0
-                      file:text-xs file:font-medium file:bg-gray-100 file:text-gray-700
-                      hover:file:bg-gray-200 cursor-pointer">
-        <textarea id="parse-textarea" rows="6"
-                  placeholder="Paste measurements here, e.g.:&#10;ga = 28+3&#10;tcd = 33.0 mm&#10;atrium_r = 8.5&#10;skull_bpd: 62"
-                  class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs resize-y focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  style="font-family:ui-monospace,monospace"></textarea>
-        <div class="flex items-center gap-2">
+               style="font-size:.72rem; color:#64748b; cursor:pointer;">
+        <textarea id="parse-textarea" rows="5"
+                  placeholder="Paste measurements here, e.g.:&#10;ga = 28+3&#10;tcd = 33.0 mm&#10;atrium_r = 8.5"
+                  class="field mono"
+                  style="width:100%; border:1px solid #e2e8f0; border-radius:8px; padding:8px 10px;
+                         font-size:.72rem; resize:vertical; background:#f8fafc; color:#334155; box-sizing:border-box;"></textarea>
+        <div style="display:flex; align-items:center; gap:10px;">
           <button type="button" onclick="parseAndFill()"
-                  class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                  style="background:#6366f1; color:#fff; border:none; border-radius:8px; padding:6px 14px;
+                         font-size:.75rem; font-weight:600; cursor:pointer; transition:background .15s;"
+                  onmouseover="this.style.background='#4f46e5';" onmouseout="this.style.background='#6366f1';">
             Parse &amp; Fill
           </button>
-          <span id="parse-status" class="text-xs text-gray-500"></span>
+          <span id="parse-status" style="font-size:.72rem; color:#64748b;"></span>
         </div>
-        <!-- Preview of what will be filled -->
-        <div id="parse-preview" class="hidden text-xs space-y-1"></div>
+        <div id="parse-preview" class="hidden" style="font-size:.72rem; display:none; flex-direction:column; gap:3px;"></div>
       </div>
     </div>
 
+    <!-- Parameter sections -->
     {% set sections = namespace(current=None) %}
     {% for field_name, label, unit, section in param_fields %}
 
@@ -110,185 +199,221 @@
           </div></div>
         {% endif %}
         {% set sections.current = section %}
-        <div class="bg-white rounded border border-gray-200 shadow-sm">
-          <div class="px-3 py-2 bg-gray-100 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">{{ section }}</div>
-          <div class="divide-y divide-gray-100">
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.06);">
+          <div class="section-head">{{ section }}</div>
+          <div>
       {% endif %}
 
-      <div class="px-3 py-2 flex items-center gap-2">
-        <label class="text-xs text-gray-700 w-44 flex-shrink-0">{{ label }}</label>
+      <div class="param-row" style="padding:8px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f8fafc;">
+        <label style="font-size:.78rem; color:#475569; width:170px; flex-shrink:0; font-weight:500;">{{ label }}</label>
 
         {% if field_name == "csp" %}
           <input type="number" name="csp" step="0.1" min="0" max="30"
-                 value="{{ form.csp if form else '' }}"
-                 placeholder="mm"
-                 class="calc-input border border-gray-300 rounded px-2 py-1 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-blue-200">
-          <label class="flex items-center gap-1 text-xs text-gray-500 ml-1">
+                 value="{{ form.csp if form else '' }}" placeholder="mm"
+                 class="calc-input field"
+                 style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
+          <label style="display:flex; align-items:center; gap:5px; font-size:.72rem; color:#94a3b8; cursor:pointer; flex-shrink:0;">
             <input type="checkbox" name="csp_absent"
                    {% if form and form.get('csp_absent') == 'on' %}checked{% endif %}
-                   class="calc-input rounded">
+                   class="calc-input" style="accent-color:#6366f1;">
             absent
           </label>
         {% elif field_name == "cc_length" %}
           <input type="number" name="cc_length" step="0.1" min="0" max="100"
-                 value="{{ form.cc_length if form else '' }}"
-                 placeholder="mm"
-                 class="calc-input border border-gray-300 rounded px-2 py-1 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-blue-200">
-          <label class="flex items-center gap-1 text-xs text-gray-500 ml-1">
+                 value="{{ form.cc_length if form else '' }}" placeholder="mm"
+                 class="calc-input field"
+                 style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
+          <label style="display:flex; align-items:center; gap:5px; font-size:.72rem; color:#94a3b8; cursor:pointer; flex-shrink:0;">
             <input type="checkbox" name="cc_absent"
                    {% if form and form.get('cc_absent') == 'on' %}checked{% endif %}
-                   class="calc-input rounded">
+                   class="calc-input" style="accent-color:#6366f1;">
             absent
           </label>
         {% else %}
           <input type="number" name="{{ field_name }}" step="0.1" min="0" max="999"
                  value="{{ form[field_name] if form and field_name in form else '' }}"
                  placeholder="{{ unit }}"
-                 class="calc-input border border-gray-300 rounded px-2 py-1 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                 class="calc-input field"
+                 style="width:72px; border:1px solid #e2e8f0; border-radius:8px; padding:4px 8px; font-size:.82rem; background:#f8fafc; color:#1e293b; text-align:right;">
         {% endif %}
 
         {% if case %}
           {% if field_name in case.parameters %}
             {% set r = case.parameters[field_name] %}
             {% set band = r.band %}
-            {% set band_class = 'band-normal' if band == 'normal' else 'band-low' if band in ('<5th','<3rd') else 'band-high' %}
-            <span class="{{ band_class }} text-xs ml-1">{{ band }}</span>
-            <span class="text-xs text-gray-500">
-              Z {{ '{:+.2f}'.format(r.consensus.consensus_z) }} |
-              {{ r.consensus.percentile | round | int }}th pct |
-              <span class="agree-{{ r.consensus.agreement }}">{{ r.consensus.agreement }}</span>
+            {% set pill = 'band-normal' if band == 'normal' else 'band-low' if band in ('<5th','<3rd') else 'band-high' %}
+            <span class="band-pill {{ pill }}">{{ band }}</span>
+            <span style="font-size:.75rem; color:#64748b; display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+              <span class="mono" style="font-weight:700; color:#1e293b; font-size:.8rem;">
+                Z {{ '{:+.2f}'.format(r.consensus.consensus_z) }}
+              </span>
+              <span style="color:#cbd5e1;">·</span>
+              <span>{{ r.consensus.percentile | round | int }}th</span>
+              <span style="color:#cbd5e1;">·</span>
+              <span class="agr agr-{{ r.consensus.agreement }}">{{ r.consensus.agreement }}</span>
             </span>
-            <details class="ml-auto">
-              <summary class="text-xs text-blue-600 cursor-pointer">{{ r.consensus.sources | length }} source(s)</summary>
-              <div class="text-xs text-gray-600 mt-1 space-y-0.5">
+            <details style="margin-left:auto; flex-shrink:0;">
+              <summary style="font-size:.7rem; color:#6366f1; cursor:pointer; list-style:none; font-weight:600;">
+                {{ r.consensus.sources | length }} src
+              </summary>
+              <div style="position:absolute; z-index:50; margin-top:4px; background:#fff; border:1px solid #e2e8f0;
+                          border-radius:8px; padding:8px 12px; box-shadow:0 4px 16px rgba(0,0,0,.1);
+                          font-size:.7rem; color:#475569; min-width:220px; line-height:1.8;">
                 {% for s in r.consensus.sources %}
-                  <div>{{ s.label }}: z={{ '{:+.2f}'.format(s.z_score) }} ({{ 'in-range' if s.in_range else 'extrapolated' }})</div>
+                  <div style="display:flex; justify-content:space-between; gap:16px;">
+                    <span style="font-weight:600; color:#1e293b;">{{ s.label }}</span>
+                    <span class="mono">z={{ '{:+.2f}'.format(s.z_score) }}</span>
+                    <span style="color:{{ '#16a34a' if s.in_range else '#f59e0b' }}; font-weight:600;">
+                      {{ 'in-range' if s.in_range else 'extrap.' }}
+                    </span>
+                  </div>
                 {% endfor %}
               </div>
             </details>
           {% elif field_name == 'csp' and 'csp' in case.qualitative_absent %}
-            <span class="band-absent text-xs ml-1">absent</span>
+            <span class="band-pill band-absent">Absent</span>
           {% elif field_name == 'cc_length' and 'cc_length' in case.qualitative_absent %}
-            <span class="band-absent text-xs ml-1">absent</span>
+            <span class="band-pill band-absent">Absent</span>
           {% endif %}
         {% endif %}
       </div>
     {% endfor %}
     </div></div>
 
-    <p class="text-xs text-gray-400 px-1">* TVA and cisterna magna depth are qualitative; not z-scored.</p>
-
-    <div class="flex justify-end">
-      <button type="button" class="text-xs text-gray-400 hover:text-gray-600 underline" onclick="location.href='/'">Clear all</button>
-    </div>
+    <p style="font-size:.68rem; color:#94a3b8; padding:0 4px;">
+      * TVA and cisterna magna depth are qualitative — not z-scored.
+    </p>
   </div>
 
-  <!-- RIGHT: DDx + report + chat -->
-  <div class="w-1/2 flex flex-col gap-4">
+  <!-- ── RIGHT: DDx + Report + Chat ── -->
+  <div class="w-1/2 flex flex-col gap-3">
 
-    <!-- Results: replaced on each recalculation -->
-    <div id="calc-results" class="flex flex-col gap-4">
-
-      {% if case and case.ddx_cards %}
-      <div class="bg-white rounded border border-gray-200 shadow-sm">
-        <div class="px-3 py-2 bg-amber-50 border-b border-amber-200 text-xs font-semibold text-amber-800 uppercase tracking-wider">
-          Differential Diagnoses — {{ case.ddx_cards | length }} card{{ 's' if case.ddx_cards | length != 1 else '' }}
-        </div>
-        <div class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
-          {% for card in case.ddx_cards %}
-          <details class="px-3 py-2">
-            <summary class="cursor-pointer text-sm font-medium text-gray-800 flex items-center gap-2">
-              {% if card.is_combined_pattern %}
-                <span class="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded">PATTERN</span>
-              {% endif %}
-              {{ card.label }}
-            </summary>
-            <div class="mt-2 space-y-2 text-xs text-gray-700">
-              <p class="text-gray-500 italic">{{ card.trigger_description }}</p>
-              <table class="w-full text-xs border-collapse">
-                <thead>
-                  <tr class="border-b border-gray-200">
-                    <th class="text-left py-1 pr-2 font-medium text-gray-600">Diagnosis</th>
-                    <th class="text-left py-1 pr-2 font-medium text-gray-600">Likelihood</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for dx in card.diagnoses %}
-                  <tr class="border-b border-gray-100">
-                    <td class="py-1 pr-2">{{ dx.name }}</td>
-                    <td class="py-1 pr-2 font-medium">{{ dx.likelihood }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-              <p><span class="font-medium">Next steps:</span> {{ card.next_steps }}</p>
-              <p class="text-gray-400"><span class="font-medium">Source:</span> {{ card.primary_source }}</p>
-            </div>
-          </details>
-          {% endfor %}
-        </div>
+    <!-- DDx cards -->
+    {% if case and case.ddx_cards %}
+    <div style="background:#fff; border:1px solid #fde68a; border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.06);">
+      <div style="padding:10px 16px; background:linear-gradient(135deg,#fffbeb,#fef3c7); border-bottom:1px solid #fde68a;
+                  display:flex; align-items:center; gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span style="font-size:.72rem; font-weight:700; color:#b45309; letter-spacing:.05em; text-transform:uppercase;">
+          Differential Diagnoses
+        </span>
+        <span style="margin-left:auto; font-size:.7rem; font-weight:600; color:#92400e;
+                     background:#fef3c7; padding:2px 8px; border-radius:9999px; border:1px solid #fde68a;">
+          {{ case.ddx_cards | length }} card{{ 's' if case.ddx_cards | length != 1 else '' }}
+        </span>
       </div>
-      {% endif %}
-
-      <div class="bg-white rounded border border-gray-200 shadow-sm flex flex-col">
-        <div class="px-3 py-2 bg-gray-100 border-b border-gray-200 flex items-center justify-between">
-          <span class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Structured Report</span>
-          {% if report_text %}
-          <button type="button" onclick="copyReport()"
-                  class="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
-            Copy to Clipboard
-          </button>
-          {% endif %}
-        </div>
-        <textarea id="report-text" readonly
-                  class="flex-1 p-3 text-xs bg-white resize-none focus:outline-none"
-                  style="min-height: 320px;">{{ report_text }}</textarea>
+      <div style="max-height:380px; overflow-y:auto;">
+        {% for card in case.ddx_cards %}
+        <details style="border-bottom:1px solid #fef9c3;">
+          <summary style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:8px;
+                          font-size:.82rem; font-weight:600; color:#1e293b; list-style:none;
+                          transition:background .1s;"
+                   onmouseover="this.style.background='#fffbeb';" onmouseout="this.style.background='';">
+            {% if card.is_combined_pattern %}
+              <span style="background:#fee2e2; color:#b91c1c; font-size:.62rem; font-weight:700;
+                           padding:2px 7px; border-radius:4px; letter-spacing:.04em; text-transform:uppercase; flex-shrink:0;">Pattern</span>
+            {% endif %}
+            {{ card.label }}
+            <svg style="margin-left:auto; flex-shrink:0;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div style="padding:12px 16px; background:#fffdf5; border-top:1px solid #fef9c3; font-size:.78rem; color:#374151;">
+            <p style="color:#92400e; font-style:italic; margin-bottom:10px; font-size:.72rem;">{{ card.trigger_description }}</p>
+            <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+              <thead>
+                <tr style="border-bottom:1px solid #fde68a;">
+                  <th style="text-align:left; padding:4px 8px 4px 0; font-size:.7rem; color:#64748b; font-weight:600;">Diagnosis</th>
+                  <th style="text-align:left; padding:4px 8px 4px 0; font-size:.7rem; color:#64748b; font-weight:600;">Likelihood</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for dx in card.diagnoses %}
+                <tr style="border-bottom:1px solid #fef3c7;">
+                  <td style="padding:5px 8px 5px 0;">{{ dx.name }}</td>
+                  <td style="padding:5px 8px 5px 0; font-weight:600; color:#92400e;">{{ dx.likelihood }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <p style="margin-bottom:4px;"><span style="font-weight:600; color:#374151;">Next steps:</span> {{ card.next_steps }}</p>
+            <p style="color:#94a3b8; font-size:.7rem;"><span style="font-weight:600;">Source:</span> {{ card.primary_source }}</p>
+          </div>
+        </details>
+        {% endfor %}
       </div>
+    </div>
+    {% endif %}
 
-    </div><!-- end #calc-results -->
+    <!-- Structured Report -->
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;
+                box-shadow:0 1px 4px rgba(0,0,0,.06); display:flex; flex-direction:column;">
+      <div style="padding:10px 16px; background:linear-gradient(135deg,#f8fafc,#f1f5f9); border-bottom:1px solid #e2e8f0;
+                  display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span style="font-size:.72rem; font-weight:700; color:#475569; letter-spacing:.05em; text-transform:uppercase;">Structured Report</span>
+        </div>
+        {% if report_text %}
+        <button type="button" onclick="copyReport()"
+                style="background:#6366f1; color:#fff; border:none; border-radius:7px; padding:5px 12px;
+                       font-size:.72rem; font-weight:600; cursor:pointer; transition:background .15s;"
+                onmouseover="this.style.background='#4f46e5';" onmouseout="this.style.background='#6366f1';">
+          Copy to Clipboard
+        </button>
+        {% endif %}
+      </div>
+      <textarea id="report-text" readonly class="mono"
+                style="flex:1; padding:14px 16px; font-size:.76rem; background:#fafcff; resize:none;
+                       border:none; outline:none; color:#334155; line-height:1.7; min-height:300px;">{{ report_text }}</textarea>
+    </div>
 
-    <!-- AI chat: lives outside #calc-results so it survives recalculations -->
-    <div class="bg-white rounded border border-gray-200 shadow-sm flex flex-col" style="min-height: 320px;">
-      <div class="px-3 py-2 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
-        <div>
-          <span class="text-xs font-semibold text-blue-800 uppercase tracking-wider">AI Literature Assistant</span>
-          <span class="text-xs text-blue-400 ml-2">Grounded in 44 fetal MRI papers</span>
+    <!-- AI Literature Chat -->
+    <div style="background:#fff; border:1px solid #e0e7ff; border-radius:12px; overflow:hidden;
+                box-shadow:0 1px 4px rgba(0,0,0,.06); display:flex; flex-direction:column; min-height:300px;">
+      <div style="padding:10px 16px; background:linear-gradient(135deg,#eef2ff,#e0e7ff); border-bottom:1px solid #c7d2fe;
+                  display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <span style="font-size:.72rem; font-weight:700; color:#4338ca; letter-spacing:.05em; text-transform:uppercase;">AI Literature Assistant</span>
+          <span style="font-size:.68rem; color:#818cf8; font-weight:500;">44 fetal MRI papers</span>
         </div>
         <button type="button" onclick="clearChat()"
-                class="text-xs text-gray-400 hover:text-gray-600 underline">Clear</button>
+                style="font-size:.7rem; color:#a5b4fc; background:none; border:none; cursor:pointer;
+                       font-weight:500; transition:color .15s;"
+                onmouseover="this.style.color='#6366f1';" onmouseout="this.style.color='#a5b4fc';">
+          Clear
+        </button>
       </div>
 
-      <!-- Message history -->
-      <div id="chat-messages"
-           class="flex-1 overflow-y-auto p-3"
-           style="min-height: 180px; max-height: 420px;">
-        <p class="text-xs text-gray-400 text-center select-none">
-          Ask a question — the current report is automatically included as context.
+      <div id="chat-messages" style="flex:1; overflow-y:auto; padding:14px 16px; min-height:160px; max-height:380px; display:flex; flex-direction:column; gap:12px;">
+        <p style="font-size:.75rem; color:#94a3b8; text-align:center; margin:auto; padding:20px 0;">
+          Ask a question about fetal MRI — the current report is automatically included as context.
         </p>
       </div>
 
-      <!-- Input row -->
-      <div class="border-t border-gray-200 p-2 flex gap-2 items-end">
+      <div style="border-top:1px solid #e0e7ff; padding:10px 12px; display:flex; gap:8px; align-items:flex-end;">
         <textarea id="chat-question" name="question" form="chat-form" rows="2"
                   placeholder="e.g. What are the diagnostic criteria for mild ventriculomegaly?"
                   onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();document.getElementById('chat-send').click();}"
-                  class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  style="font-family: inherit; font-size: 0.875rem;"></textarea>
-
-        <!-- Spinner shown while request is in flight -->
-        <div id="chat-spinner" class="htmx-indicator self-center">
-          <svg class="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  style="flex:1; border:1px solid #e0e7ff; border-radius:10px; padding:8px 12px;
+                         font-size:.82rem; resize:none; outline:none; color:#1e293b; background:#f8faff;
+                         transition:border .15s;"
+                  onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,.15)';"
+                  onblur="this.style.borderColor='#e0e7ff'; this.style.boxShadow='';"></textarea>
+        <div id="chat-spinner" class="htmx-indicator" style="align-self:center;">
+          <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10" stroke-opacity=".25"/>
+            <path d="M4 12a8 8 0 018-8" stroke-linecap="round"/>
           </svg>
         </div>
-
         <button id="chat-send" type="submit" form="chat-form"
-                class="self-end px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 whitespace-nowrap">
+                style="background:#6366f1; color:#fff; border:none; border-radius:10px; padding:8px 16px;
+                       font-size:.78rem; font-weight:600; cursor:pointer; align-self:flex-end;
+                       transition:background .15s; white-space:nowrap;"
+                onmouseover="this.style.background='#4f46e5';" onmouseout="this.style.background='#6366f1';">
           Send
         </button>
       </div>
-    </div><!-- end chat -->
+    </div>
 
   </div><!-- end right column -->
 </div>
@@ -296,11 +421,7 @@
 </form>
 
 <script>
-// Prevent non-calc inputs from bubbling events to the calc form and
-// triggering a spurious recalculation.
-// File inputs fire both 'input' and 'change' when a file is selected;
-// without stopPropagation the body swap fires before the FileReader
-// completes, wiping the textarea before the user can click Parse & Fill.
+// ── Stop non-calc inputs from triggering recalculation ──
 (function() {
   function stopBubble(id, events) {
     var el = document.getElementById(id);
@@ -321,6 +442,7 @@
   }
 })();
 
+// ── Clipboard ──
 function copyReport() {
   const ta = document.getElementById('report-text');
   navigator.clipboard.writeText(ta.value).then(() => {
@@ -331,20 +453,19 @@ function copyReport() {
   });
 }
 
+// ── Chat helpers ──
 function clearChat() {
-  const msgs = document.getElementById('chat-messages');
-  msgs.innerHTML = '<p class="text-xs text-gray-400 text-center select-none">Ask a question — the current report is automatically included as context.</p>';
+  document.getElementById('chat-messages').innerHTML =
+    '<p style="font-size:.75rem;color:#94a3b8;text-align:center;margin:auto;padding:20px 0;">Ask a question about fetal MRI — the current report is automatically included as context.</p>';
 }
 
-// Inject the current report text into the chat request just before it fires
 document.body.addEventListener('htmx:configRequest', function(e) {
   if (e.detail.elt.id === 'chat-form') {
-    e.detail.parameters['report_context'] =
-      document.getElementById('report-text') ? document.getElementById('report-text').value : '';
+    var rpt = document.getElementById('report-text');
+    e.detail.parameters['report_context'] = rpt ? rpt.value : '';
   }
 });
 
-// After chat response: clear the input and scroll to the new message
 document.body.addEventListener('htmx:afterRequest', function(e) {
   if (e.detail.elt.id === 'chat-form') {
     document.getElementById('chat-question').value = '';
@@ -354,19 +475,16 @@ document.body.addEventListener('htmx:afterRequest', function(e) {
 });
 
 document.addEventListener('htmx:afterSwap', function(e) {
-  if (e.target.id === 'chat-messages') {
-    e.target.scrollTop = e.target.scrollHeight;
-  }
+  if (e.target.id === 'chat-messages') e.target.scrollTop = e.target.scrollHeight;
 });
 
-// ---------------------------------------------------------------------------
-// Load-from-file panel
-// ---------------------------------------------------------------------------
+// ── File panel ──
 function toggleFilePanel() {
   var panel = document.getElementById('file-panel');
   var arrow = document.getElementById('file-panel-arrow');
-  var hidden = panel.classList.toggle('hidden');
-  arrow.innerHTML = hidden ? '&#9660;' : '&#9650;';
+  var isHidden = panel.style.display === 'none' || panel.style.display === '';
+  panel.style.display = isHidden ? 'flex' : 'none';
+  arrow.textContent = isHidden ? '▲' : '▼';
 }
 
 function loadFileIntoTextarea(input) {
@@ -382,68 +500,46 @@ function loadFileIntoTextarea(input) {
 
 function parseAndFill() {
   var text = document.getElementById('parse-textarea').value.trim();
-  if (!text) {
-    document.getElementById('parse-status').textContent = 'Paste some text first.';
-    return;
-  }
+  if (!text) { document.getElementById('parse-status').textContent = 'Paste some text first.'; return; }
 
   var status = document.getElementById('parse-status');
   status.textContent = 'Parsing…';
 
-  var formData = new FormData();
-  formData.append('text', text);
+  var fd = new FormData();
+  fd.append('text', text);
 
-  fetch('/parse-text', { method: 'POST', body: formData })
+  fetch('/parse-text', { method: 'POST', body: fd })
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var filled = 0;
-      var skipped = 0;
-
-      // Apply GA
       if (data.values['ga']) {
-        var gaEl = document.querySelector('[name="ga"]');
-        if (gaEl) { gaEl.value = data.values['ga']; filled++; }
+        var el = document.querySelector('[name="ga"]');
+        if (el) { el.value = data.values['ga']; filled++; }
       }
-
-      // Apply numeric parameters
       Object.entries(data.values).forEach(function([param, val]) {
         if (param === 'ga') return;
         var el = document.querySelector('[name="' + param + '"]');
-        if (el) {
-          el.value = val;
-          filled++;
-        } else {
-          skipped++;
-        }
+        if (el) { el.value = val; filled++; }
       });
 
-      // Show preview
       var preview = document.getElementById('parse-preview');
       var rows = Object.entries(data.values).map(function([k, v]) {
-        return '<div class="flex gap-2"><span class="text-gray-400 w-36 truncate">' + k + '</span>'
-             + '<span class="font-mono text-gray-800">' + v + '</span></div>';
+        return '<div style="display:flex;gap:8px;"><span style="color:#94a3b8;width:140px;overflow:hidden;text-overflow:ellipsis;">' + k + '</span>'
+             + '<span style="font-family:monospace;color:#334155;font-weight:600;">' + v + '</span></div>';
       }).join('');
-      if (data.unrecognized.length) {
-        rows += '<div class="mt-1 text-gray-400">Unrecognized: ' + data.unrecognized.join(', ') + '</div>';
-      }
-      preview.innerHTML = rows || '<div class="text-gray-400">No values recognised.</div>';
-      preview.classList.remove('hidden');
+      if (data.unrecognized.length)
+        rows += '<div style="color:#94a3b8;margin-top:4px;">Unrecognized: ' + data.unrecognized.join(', ') + '</div>';
+      preview.innerHTML = rows || '<div style="color:#94a3b8;">No values recognised.</div>';
+      preview.style.display = 'flex';
 
       if (filled > 0) {
-        // Trigger recalculation
-        var anyInput = document.querySelector('.calc-input');
-        if (anyInput) htmx.trigger(document.getElementById('calc-form'), 'input');
+        htmx.trigger(document.getElementById('calc-form'), 'input');
         status.textContent = filled + ' field' + (filled === 1 ? '' : 's') + ' filled.';
-        if (data.warnings && data.warnings.length) {
-          status.textContent += ' ⚠ ' + data.warnings.join(' ');
-        }
       } else {
-        status.textContent = 'No matching fields found. Check the key names.';
+        status.textContent = 'No matching fields found.';
       }
     })
-    .catch(function() {
-      document.getElementById('parse-status').textContent = 'Parse request failed.';
-    });
+    .catch(function() { document.getElementById('parse-status').textContent = 'Parse request failed.'; });
 }
 </script>
 

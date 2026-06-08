@@ -204,32 +204,43 @@ async def chat(request: Request) -> HTMLResponse:
     q = html.escape(question)
 
     if error_msg:
-        body_html = f'<p class="text-red-600 text-xs">{html.escape(error_msg)}</p>'
+        body_html = (
+            f'<p style="color:#dc2626;font-size:.75rem;">{html.escape(error_msg)}</p>'
+        )
     else:
         a = html.escape(answer_text).replace("\n", "<br>")
-        body_html = f'<p class="text-sm text-gray-800">{a}</p>'
+        body_html = f'<p style="font-size:.82rem;color:#1e293b;line-height:1.65;">{a}</p>'
         if citations:
             items = "".join(
-                f'<div class="mb-1"><span class="font-semibold text-gray-700">[{c.rank}]</span> '
-                f'{html.escape(c.chunk.source_title or c.chunk.source_id)}'
-                f'{f" p.{c.chunk.page_start}" if c.chunk.page_start else ""} — '
-                f'<span class="text-gray-500">{html.escape(c.chunk.text[:220])}…</span></div>'
+                f'<div style="margin-bottom:6px;">'
+                f'<span style="font-weight:700;color:#4338ca;">[{c.rank}]</span> '
+                f'<span style="font-weight:600;color:#334155;">{html.escape(c.chunk.source_title or c.chunk.source_id)}</span>'
+                f'{f"<span style=\"color:#94a3b8;\"> p.{c.chunk.page_start}</span>" if c.chunk.page_start else ""} — '
+                f'<span style="color:#64748b;">{html.escape(c.chunk.text[:220])}…</span>'
+                f'</div>'
                 for c in citations
             )
             body_html += (
-                f'<details class="mt-2">'
-                f'<summary class="cursor-pointer text-xs text-blue-600 select-none">'
+                f'<details style="margin-top:8px;">'
+                f'<summary style="cursor:pointer;font-size:.7rem;color:#6366f1;font-weight:600;">'
                 f'{len(citations)} source(s)</summary>'
-                f'<div class="mt-1 text-xs text-gray-600 space-y-1 pl-1">{items}</div>'
+                f'<div style="margin-top:6px;font-size:.7rem;color:#475569;line-height:1.6;'
+                f'padding:8px;background:#f8faff;border-radius:6px;border:1px solid #e0e7ff;">{items}</div>'
                 f'</details>'
             )
 
     fragment = (
-        f'<div class="mb-4">'
-        f'<div class="mb-1 text-xs font-semibold text-blue-700">You</div>'
-        f'<div class="bg-blue-50 rounded px-3 py-2 text-sm text-gray-900 mb-2">{q}</div>'
-        f'<div class="text-xs font-semibold text-gray-500 mb-1">AI — literature-grounded</div>'
-        f'<div class="bg-gray-50 border border-gray-200 rounded px-3 py-2">{body_html}</div>'
+        f'<div style="display:flex;flex-direction:column;gap:6px;">'
+        # User bubble
+        f'<div style="align-self:flex-end;max-width:85%;">'
+        f'<div style="font-size:.65rem;color:#818cf8;font-weight:600;text-align:right;margin-bottom:3px;">You</div>'
+        f'<div class="chat-user" style="padding:8px 12px;font-size:.82rem;color:#1e293b;">{q}</div>'
+        f'</div>'
+        # AI bubble
+        f'<div style="align-self:flex-start;max-width:92%;">'
+        f'<div style="font-size:.65rem;color:#6366f1;font-weight:600;margin-bottom:3px;">AI · Literature-grounded</div>'
+        f'<div class="chat-ai" style="padding:10px 12px;">{body_html}</div>'
+        f'</div>'
         f'</div>'
     )
     return HTMLResponse(fragment)
